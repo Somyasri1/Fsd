@@ -1,0 +1,94 @@
+const mongoose=require('mongoose');
+const uri="mongodb://127.0.0.1:27017/4aUsers";
+mongoose.connect(uri,{
+    useNewUrlParser:true,
+    useUnifiedTopology:true,
+})
+.then(()=>console.log("Connected to MongoDB"))
+.catch(err=>console.error("MongoDb connection error",err));
+const userSchema=new mongoose.Schema(
+    {
+        name:String,
+        email:String,
+        age:Number,
+    }
+);
+const User=mongoose.model("User",userSchema);
+async function createUser(name,email,age){
+    const user=new User({name,email,age});
+    await user.save();
+    console.log("Created User: ",user);
+}
+async function getUsers(){
+    const users=await User.find();
+    console.log("All Users: ",users);
+}
+async function getUserByEmail(email){
+    const user=await User.findOne({email});
+    console.log("Found User: ",user);
+}
+async function updateUser(email,newAge){
+    const user=await User.findOneAndUpdate(
+        {email},{age:newAge},{new:true}
+    );
+    console.log("Updated User: ",user);
+}
+async function deleteUser(email){
+    const result=await User.deleteOne({email});
+    console.log("Deleted User: ",result);
+}
+async function runCRUD(){
+    try{
+        await createUser("Sree","sree@gmail.com",19);
+        
+        await getUsers();
+        await getUserByEmail("sree@gmail.com");
+        await updateUser("sree@gmail.com",30);
+        await deleteUser("sree@gmail.com");
+        await getUsers();
+    }catch(err){
+        console.error("Error in CRUD operations",err);
+    }finally{
+        await mongoose.disconnect();
+        console.log("MongoDB disconnected");
+    }
+}
+runCRUD();
+
+
+
+
+Connected to MongoDB
+Created User:  {
+  name: 'Sree',
+  email: 'sree@gmail.com',
+  age: 19,
+  _id: new ObjectId('690e2f60640baff25f79b281'),
+  __v: 0
+}
+All Users:  [
+  {
+    _id: new ObjectId('690e2f60640baff25f79b281'),
+    name: 'Sree',
+    email: 'sree@gmail.com',
+    age: 19,
+    __v: 0
+  }
+]
+Found User:  {
+  _id: new ObjectId('690e2f60640baff25f79b281'),
+  name: 'Sree',
+  email: 'sree@gmail.com',
+  age: 19,
+  __v: 0
+}
+Updated User:  {
+  _id: new ObjectId('690e2f60640baff25f79b281'),
+  name: 'Sree',
+  email: 'sree@gmail.com',
+  age: 30,
+  __v: 0
+}
+Deleted User:  { acknowledged: true, deletedCount: 1 }
+All Users:  []
+MongoDB disconnected
